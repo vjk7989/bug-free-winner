@@ -17,88 +17,96 @@ export interface Email {
   read: boolean;
 }
 
-class EmailService {
-  private imapClient: ImapFlow;
-  private smtpTransporter: nodemailer.Transporter;
+// Email transporter for Gmail
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASSWORD,
+  },
+});
 
-  constructor() {
-    // Initialize IMAP client for reading emails
-    this.imapClient = new ImapFlow({
-      host: process.env.IMAP_HOST || 'imap.gmail.com',
-      port: Number(process.env.IMAP_PORT) || 993,
-      secure: true,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
-      },
-    });
+// IMAP client for reading emails
+const imapClient = new ImapFlow({
+  host: process.env.IMAP_HOST,
+  port: Number(process.env.IMAP_PORT),
+  secure: true,
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASSWORD,
+  },
+  logger: false
+});
 
-    // Initialize SMTP transporter for sending emails
-    this.smtpTransporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: Number(process.env.SMTP_PORT) || 587,
-      secure: false,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
-      },
-    });
-  }
-
-  async fetchEmails(userEmail: string): Promise<Email[]> {
+export const emailService = {
+  // Send email
+  async sendEmail(to: string[], subject: string, text: string, html?: string, cc?: string[], bcc?: string[]) {
     try {
-      await this.imapClient.connect();
-      const lock = await this.imapClient.getMailboxLock('INBOX');
+      const mailOptions = {
+        from: `"Real Estate CRM" <${process.env.EMAIL_USER}>`,
+        to: to.join(', '),
+        cc: cc?.join(', '),
+        bcc: bcc?.join(', '),
+        subject,
+        text,
+        html: html || text,
+      };
 
-      const emails: Email[] = [];
+      const result = await transporter.sendMail(mailOptions);
+      return result;
+    } catch (error) {
+      console.error('Send email error:', error);
+      throw error;
+    }
+  },
+
+  // Read latest emails
+  async getLatestEmails(limit = 10) {
+    try {
+      await imapClient.connect();
+      
+      const lock = await imapClient.getMailboxLock('INBOX');
+      
       try {
-        for await (const message of this.imapClient.fetch({ seen: false }, { source: true })) {
+        const messages = [];
+        for await (const message of imapClient.fetch({ limit }, { source: true })) {
           const parsed = await simpleParser(message.source);
-          
-          // Only include emails sent to the user's registered email
-          if (parsed.to?.text.includes(userEmail)) {
-            emails.push({
-              id: message.uid.toString(),
-              from: parsed.from?.text || '',
-              to: parsed.to?.text || '',
-              subject: parsed.subject || '',
-              body: parsed.text || '',
-              date: parsed.date || new Date(),
-              attachments: parsed.attachments.map(att => ({
-                filename: att.filename || 'unnamed',
-                contentType: att.contentType || 'application/octet-stream',
-                content: att.content,
-              })),
-              read: false,
-            });
-          }
+          messages.push({
+            id: message.uid,
+            subject: parsed.subject,
+            from: parsed.from?.text,
+            to: parsed.to?.text,
+            date: parsed.date,
+            text: parsed.text,
+            html: parsed.html
+          });
         }
+        return messages;
       } finally {
         lock.release();
       }
-
-      await this.imapClient.logout();
-      return emails;
     } catch (error) {
-      console.error('Error fetching emails:', error);
+      console.error('Get emails error:', error);
       throw error;
+    } finally {
+      await imapClient.logout();
     }
-  }
+  },
 
-  async sendEmail(to: string, subject: string, body: string, attachments?: any[]) {
-    try {
-      await this.smtpTransporter.sendMail({
-        from: process.env.EMAIL_USER,
-        to,
-        subject,
-        text: body,
-        attachments,
-      });
-    } catch (error) {
-      console.error('Error sending email:', error);
-      throw error;
-    }
-  }
-}
+  // Send lead-related email
+  async sendLeadEmail(to: string[], subject: string, content: string, cc?: string[], bcc?: string[]) {
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #2d3748;">${subject}</h2>
+        <div style="color: #4a5568; line-height: 1.6;">
+          ${content}
+        </div>
+        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e2e8f0; color: #718096;">
+          <p>Best regards,<br>Your Real Estate Team</p>
+        </div>
+      </div>
+    `;
 
-export const emailService = new EmailService(); 
+    return this.sendEmail(to, subject, content, html, cc, bcc);
+  }
+}; 

@@ -100,7 +100,12 @@ function PermissionsContent() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-semibold">User Permissions</h1>
-        <Button onClick={handleSavePermissions}>Save Permissions</Button>
+        <Button 
+          onClick={handleSavePermissions}
+          className="bg-[#ef4444] hover:bg-[#dc2626] text-white"
+        >
+          Save Changes
+        </Button>
       </div>
 
       <Card>

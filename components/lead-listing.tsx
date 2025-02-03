@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { CallHistory } from "@/components/call-history"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Phone, Mail, Home, Calendar, ClipboardList, PlusCircle, Plus, Upload, Info } from "lucide-react"
+import { Phone, Mail, Home, Calendar, ClipboardList, PlusCircle, Plus, Upload, Info, History } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { StrategyPlanner } from "@/components/strategy-planner"
@@ -62,6 +62,7 @@ export function LeadListing() {
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null)
   const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false)
   const router = useRouter()
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false)
 
   // Separate mounting and data fetching
   useEffect(() => {
@@ -333,16 +334,16 @@ export function LeadListing() {
                 <TableCell>
                   <Button
                     variant="link"
-                    className="p-0 h-auto font-normal"
+                    className="p-0 h-auto font-normal text-black hover:text-gray-700"
                     onClick={() => router.push(`/lead/${lead._id}`)}
                   >
                     {lead.name}
                   </Button>
                 </TableCell>
                 <TableCell>
-                  <div className="text-sm">
+                  <div className="text-sm text-black">
                     <div>{lead.email}</div>
-                    <div className="text-gray-500">{lead.phone}</div>
+                    <div className="text-gray-600">{lead.phone}</div>
                   </div>
                 </TableCell>
                 <TableCell>
@@ -360,7 +361,7 @@ export function LeadListing() {
                       <Button 
                         variant="outline" 
                         size="sm" 
-                        className="flex-1" 
+                        className="flex-1 border-black text-black hover:bg-black hover:text-white" 
                         onClick={() => handleCall(lead._id, lead.phone)}
                       >
                         <Phone className="h-4 w-4 mr-2" />
@@ -372,6 +373,7 @@ export function LeadListing() {
                             <Button
                               variant="outline"
                               size="sm"
+                              className="border-black text-black hover:bg-black hover:text-white"
                               onClick={(e) => {
                                 e.preventDefault()
                                 e.stopPropagation()
@@ -388,7 +390,15 @@ export function LeadListing() {
                         </Tooltip>
                       </TooltipProvider>
                     </div>
-                    <CallHistory calls={lead.callHistory || []} />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-black text-black hover:bg-black hover:text-white w-full"
+                      onClick={() => setIsHistoryOpen(true)}
+                    >
+                      <History className="h-4 w-4 mr-2" />
+                      View Call History
+                    </Button>
                     <div className="mt-2 space-y-1">
                       <div className="text-sm text-gray-600">
                         Tasks: {lead.tasks?.length || 0}

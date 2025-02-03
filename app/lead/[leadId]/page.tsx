@@ -209,6 +209,7 @@ export default function LeadDetailPage() {
           <Button 
             variant="outline" 
             onClick={() => router.back()}
+            className="border-black text-black hover:bg-black hover:text-white"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Leads
@@ -216,6 +217,7 @@ export default function LeadDetailPage() {
           <Button 
             onClick={handleSubmit} 
             disabled={isLoading}
+            className="bg-[#ef4444] hover:bg-[#dc2626] text-white"
           >
             <Save className="h-4 w-4 mr-2" />
             Save Changes

@@ -19,10 +19,17 @@ import {
 } from "@/components/ui/table"
 
 // Dynamically import heavy components
-const MonthView = dynamic(() => import("@/components/calendar/month-view").then(mod => mod.MonthView), {
-  loading: () => <div className="h-[400px] flex items-center justify-center">Loading calendar...</div>,
-  ssr: false
-})
+const MonthView = dynamic(
+  () => import("@/components/calendar/month-view").then(mod => mod.default), 
+  {
+    loading: () => (
+      <div className="h-[400px] flex items-center justify-center">
+        Loading calendar...
+      </div>
+    ),
+    ssr: false
+  }
+);
 
 interface Task {
   id: string
@@ -366,21 +373,21 @@ export default function DashboardPage() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    <Button
+              <Button
                       onClick={() => router.push('/calendar/add')}
-                      className="bg-red-500 hover:bg-red-600 text-white"
-                    >
-                      + Add New Event
-                    </Button>
+                className="bg-red-500 hover:bg-red-600 text-white"
+              >
+                + Add New Event
+              </Button>
                   </motion.div>
                 </CardHeader>
                 <CardContent>
-                  <MonthView
-                    selectedDate={selectedDate}
-                    onDateChange={setSelectedDate}
-                  />
+            <MonthView
+              selectedDate={selectedDate}
+              onDateChange={setSelectedDate}
+            />
                 </CardContent>
-              </Card>
+          </Card>
             </motion.div>
           </Suspense>
         </motion.div>

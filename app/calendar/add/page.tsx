@@ -251,10 +251,20 @@ export default function AddEventPage() {
           </div>
 
           <div className="flex justify-end gap-4">
-            <Button type="button" variant="outline" onClick={() => router.back()}>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => router.back()}
+              className="border-[#ef4444] text-[#ef4444] hover:bg-[#ef4444] hover:text-white"
+            >
               Cancel
             </Button>
-            <Button type="submit">Save Event</Button>
+            <Button 
+              type="submit"
+              className="bg-[#ef4444] hover:bg-[#dc2626] text-white"
+            >
+              Save Event
+            </Button>
           </div>
         </form>
       </div>
