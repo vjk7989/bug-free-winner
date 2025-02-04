@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { cn } from "@/lib/utils";
@@ -21,14 +21,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [user, setUser] = useState<any>(null);
-
-  useEffect(() => {
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      setUser(JSON.parse(userData));
-    }
-  }, []);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -54,10 +46,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     clearSearch();
   };
 
-  const showMenuItem = (permission: string) => {
-    return user?.permissions?.[permission] || user?.role === 'Administrator';
-  };
-
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
@@ -68,102 +56,86 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           </Link>
         </div>
         <nav className="space-y-1 p-4">
-          {showMenuItem('dashboard') && (
-            <Link
-              href="/dashboard"
-              className={cn(
-                "flex items-center gap-2 rounded-lg px-3 py-2 text-gray-500 transition-colors hover:text-gray-900",
-                pathname === '/dashboard' ? "bg-gray-100 text-gray-900" : ""
-              )}
-            >
-              <span className="grid h-6 w-6 place-items-center">📊</span>
-              Dashboard
-            </Link>
-          )}
-          {showMenuItem('leads') && (
-            <Link
-              href="/lead"
-              className={cn(
-                "flex items-center gap-2 rounded-lg px-3 py-2 text-gray-500 transition-colors hover:text-gray-900",
-                pathname === '/lead' ? "bg-gray-100 text-gray-900" : ""
-              )}
-            >
-              <span className="grid h-6 w-6 place-items-center">👥</span>
-              Lead
-            </Link>
-          )}
-          {showMenuItem('favorites') && (
-            <Link
-              href="/favorites"
-              className={cn(
-                "flex items-center gap-2 rounded-lg px-3 py-2 text-gray-500 transition-colors hover:text-gray-900",
-                pathname === '/favorites' ? "bg-gray-100 text-gray-900" : ""
-              )}
-            >
-              <span className="grid h-6 w-6 place-items-center">❤️</span>
-              Favorites
-            </Link>
-          )}
-          {showMenuItem('email') && (
-            <Link
-              href="/inbox"
-              className={cn(
-                "flex items-center gap-2 rounded-lg px-3 py-2 text-gray-500 transition-colors hover:text-gray-900",
-                pathname === '/inbox' ? "bg-gray-100 text-gray-900" : ""
-              )}
-            >
-              <span className="grid h-6 w-6 place-items-center">📬</span>
-              Inbox
-            </Link>
-          )}
-          {showMenuItem('inventory') && (
-            <Link
-              href="/inventory"
-              className={cn(
-                "flex items-center gap-2 rounded-lg px-3 py-2 text-gray-500 transition-colors hover:text-gray-900",
-                pathname === '/inventory' ? "bg-gray-100 text-gray-900" : ""
-              )}
-            >
-              <span className="grid h-6 w-6 place-items-center">🏠</span>
-              Inventory
-            </Link>
-          )}
-          {showMenuItem('users') && (
-            <Link
-              href="/users"
-              className={cn(
-                "flex items-center gap-2 rounded-lg px-3 py-2 text-gray-500 transition-colors hover:text-gray-900",
-                pathname === '/users' ? "bg-gray-100 text-gray-900" : ""
-              )}
-            >
-              <span className="grid h-6 w-6 place-items-center"></span>
-              Users
-            </Link>
-          )}
-          {showMenuItem('calendar') && (
-            <Link
-              href="/calendar"
-              className={cn(
-                "flex items-center gap-2 rounded-lg px-3 py-2 text-gray-500 transition-colors hover:text-gray-900",
-                pathname === '/calendar' ? "bg-gray-100 text-gray-900" : ""
-              )}
-            >
-              <span className="grid h-6 w-6 place-items-center">📅</span>
-              Calendar
-            </Link>
-          )}
-          {showMenuItem('settings') && (
-            <Link
-              href="/settings"
-              className={cn(
-                "flex items-center gap-2 rounded-lg px-3 py-2 text-gray-500 transition-colors hover:text-gray-900",
-                pathname === '/settings' ? "bg-gray-100 text-gray-900" : ""
-              )}
-            >
-              <span className="grid h-6 w-6 place-items-center">⚙️</span>
-              Settings
-            </Link>
-          )}
+          <Link
+            href="/dashboard"
+            className={cn(
+              "flex items-center gap-2 rounded-lg px-3 py-2 text-gray-500 transition-colors hover:text-gray-900",
+              pathname === '/dashboard' ? "bg-gray-100 text-gray-900" : ""
+            )}
+          >
+            <span className="grid h-6 w-6 place-items-center">📊</span>
+            Dashboard
+          </Link>
+          <Link
+            href="/lead"
+            className={cn(
+              "flex items-center gap-2 rounded-lg px-3 py-2 text-gray-500 transition-colors hover:text-gray-900",
+              pathname === '/lead' ? "bg-gray-100 text-gray-900" : ""
+            )}
+          >
+            <span className="grid h-6 w-6 place-items-center">👥</span>
+            Lead
+          </Link>
+          <Link
+            href="/favorites"
+            className={cn(
+              "flex items-center gap-2 rounded-lg px-3 py-2 text-gray-500 transition-colors hover:text-gray-900",
+              pathname === '/favorites' ? "bg-gray-100 text-gray-900" : ""
+            )}
+          >
+            <span className="grid h-6 w-6 place-items-center">❤️</span>
+            Favorites
+          </Link>
+          <Link
+            href="/inbox"
+            className={cn(
+              "flex items-center gap-2 rounded-lg px-3 py-2 text-gray-500 transition-colors hover:text-gray-900",
+              pathname === '/inbox' ? "bg-gray-100 text-gray-900" : ""
+            )}
+          >
+            <span className="grid h-6 w-6 place-items-center">📬</span>
+            Inbox
+          </Link>
+          <Link
+            href="/inventory"
+            className={cn(
+              "flex items-center gap-2 rounded-lg px-3 py-2 text-gray-500 transition-colors hover:text-gray-900",
+              pathname === '/inventory' ? "bg-gray-100 text-gray-900" : ""
+            )}
+          >
+            <span className="grid h-6 w-6 place-items-center">🏠</span>
+            Inventory
+          </Link>
+          <Link
+            href="/users"
+            className={cn(
+              "flex items-center gap-2 rounded-lg px-3 py-2 text-gray-500 transition-colors hover:text-gray-900",
+              pathname === '/users' ? "bg-gray-100 text-gray-900" : ""
+            )}
+          >
+            <span className="grid h-6 w-6 place-items-center">��</span>
+            Users
+          </Link>
+          <Link
+            href="/calendar"
+            className={cn(
+              "flex items-center gap-2 rounded-lg px-3 py-2 text-gray-500 transition-colors hover:text-gray-900",
+              pathname === '/calendar' ? "bg-gray-100 text-gray-900" : ""
+            )}
+          >
+            <span className="grid h-6 w-6 place-items-center">📅</span>
+            Calendar
+          </Link>
+          <Link
+            href="/settings"
+            className={cn(
+              "flex items-center gap-2 rounded-lg px-3 py-2 text-gray-500 transition-colors hover:text-gray-900",
+              pathname === '/settings' ? "bg-gray-100 text-gray-900" : ""
+            )}
+          >
+            <span className="grid h-6 w-6 place-items-center">⚙️</span>
+            Settings
+          </Link>
         </nav>
       </aside>
 
