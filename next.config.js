@@ -3,11 +3,19 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   images: {
-    domains: [
-      'localhost',
-      'hebbkx1anhila5yf.public.blob.vercel-storage.com',
-      'api.dicebear.com'
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'api.dicebear.com',
+        pathname: '/7.x/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'hebbkx1anhila5yf.public.blob.vercel-storage.com',
+        pathname: '/**',
+      },
     ],
+    domains: ['localhost'],
   },
   webpack: (config) => {
     config.resolve.fallback = {

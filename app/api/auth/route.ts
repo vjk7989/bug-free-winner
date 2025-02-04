@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server"
-import { sign } from "jsonwebtoken"
+import { connectToDatabase } from "@/lib/mongodb"
+import bcrypt from "bcryptjs"
+import { cookies } from 'next/headers'
 
 // For demo purposes, we'll use a simple credential check
 // In production, you should use a proper database and password hashing
@@ -14,40 +16,52 @@ const VALID_CREDENTIALS = {
 export async function POST(request: Request) {
   try {
     const { email, password } = await request.json()
+    const { db } = await connectToDatabase()
 
-    // Log the received credentials for debugging
-    console.log("Login attempt:", { email, password })
+    // Find user by email
+    const user = await db.collection("users").findOne({ email })
+    console.log("Found user:", user) // Debug log
 
-    // Simple credential check
-    if (email === VALID_CREDENTIALS.email && password === VALID_CREDENTIALS.password) {
-      const token = sign({ userId: VALID_CREDENTIALS.id }, process.env.JWT_SECRET || "default-secret-key", {
-        expiresIn: "1h",
-      })
-
-      const { password: _, ...userWithoutPassword } = VALID_CREDENTIALS
-
-      return NextResponse.json({
-        success: true,
-        token,
-        user: userWithoutPassword,
-      })
+    if (!user) {
+      return NextResponse.json(
+        { error: "Invalid credentials" },
+        { status: 401 }
+      )
     }
 
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Invalid email or password",
-      },
-      { status: 401 },
-    )
+    // Compare password
+    const isValidPassword = await bcrypt.compare(password, user.password)
+    console.log("Password valid:", isValidPassword) // Debug log
+
+    if (!isValidPassword) {
+      return NextResponse.json(
+        { error: "Invalid credentials" },
+        { status: 401 }
+      )
+    }
+
+    // Remove password from response
+    const { password: _, ...userWithoutPassword } = user
+
+    // Set cookie
+    const cookieStore = cookies()
+    cookieStore.set('user', JSON.stringify(userWithoutPassword), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7 // 1 week
+    })
+
+    return NextResponse.json({
+      success: true,
+      user: userWithoutPassword,
+      message: "Login successful"
+    })
   } catch (error) {
     console.error("Login error:", error)
     return NextResponse.json(
-      {
-        success: false,
-        error: "An error occurred during login",
-      },
-      { status: 500 },
+      { error: "Authentication failed" },
+      { status: 500 }
     )
   }
 }
